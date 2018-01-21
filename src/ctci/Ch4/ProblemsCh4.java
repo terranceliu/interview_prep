@@ -899,6 +899,42 @@ public class ProblemsCh4 {
         return result;
     }
 
+    public static int p4_12_2(BST bst, int targetSum) {
+        return countPaths(bst.getRoot(), targetSum, 0, new HashMap<Integer, Integer>());
+    }
+
+    public static int countPaths(BSTNode node, int targetSum, int runningSum, HashMap<Integer, Integer> pathCount) {
+        if (node == null)
+            return 0;
+
+        runningSum += node.getData();
+        int sum = runningSum - targetSum;
+        // get total paths found so far
+        int totalPaths = pathCount.getOrDefault(sum, 0);
+
+        // case means another path exists starting at the root
+        if (runningSum == targetSum)
+            totalPaths++;
+
+        incrementHashTable(pathCount, runningSum, 1);
+
+        totalPaths += countPaths(node.getLeft(), targetSum, runningSum, pathCount);
+        totalPaths += countPaths(node.getRight(), targetSum, runningSum, pathCount);
+
+        incrementHashTable(pathCount, runningSum, -1);
+
+        return totalPaths;
+    }
+
+    // keep track of how many times we've seen runningSum (each time is a new path)
+    public static void incrementHashTable(HashMap<Integer, Integer> hashTable, int key, int delta) {
+        int newCount = hashTable.getOrDefault(key, 0) + delta;
+        if (newCount == 0)
+            hashTable.remove(key);
+        else
+            hashTable.put(key, newCount);
+    }
+
     public static void p4_12_test() {
         BST bst = new BST();
         int[] list = {100, 3, 2, 5, 2, 3, 11, 1};
@@ -907,6 +943,6 @@ public class ProblemsCh4 {
         }
 
         System.out.println("p4_12_1:" + p4_12_1(bst, 8));
+        System.out.println("p4_12_2:" + p4_12_2(bst, 8));
     }
-
 }
