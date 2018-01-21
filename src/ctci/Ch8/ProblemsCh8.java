@@ -18,6 +18,27 @@ public class ProblemsCh8 {
 
         /** Problem 8.4 */
         p8_4_test();
+
+        /** Problem 8.5 */
+        p8_5_test();
+
+        /** Problem 8.6 */
+        p8_6_test();
+
+        /** Problem 8.7 */
+        p8_7_test();
+
+        /** Problem 8.8 */
+        p8_8_test();
+
+        /** Problem 8.9 */
+        p8_9_test();
+
+        /** Problem 8.10 */
+        p8_10_test();
+
+        /** Problem 8.11 */
+        p8_11_test();
     }
 
     public static int fibonacci_1(int n) {
@@ -298,5 +319,297 @@ public class ProblemsCh8 {
         System.out.println("p8_4_2:");
         ArrayList<ArrayList<Integer>> subsets2 = p8_4_2(nums);
         printSets(subsets2);
+    }
+
+    public static int p8_5(int a, int b) {
+        int smaller = a < b ? a:b;
+        int bigger = a< b ? b:a;
+        return productHelper(smaller, bigger);
+    }
+
+    public static int productHelper(int smaller, int bigger) {
+        if (smaller == 0)
+            return 0;
+        if (smaller == 1)
+            return bigger;
+
+        // divide smaller by 2
+        int halfProd = productHelper((smaller >> 1), bigger);
+
+        if (smaller % 2 == 0)
+            return halfProd + halfProd;
+        else
+            return halfProd + halfProd + bigger;
+    }
+
+    public static void p8_5_test() {
+        System.out.println("p8_5:" + p8_5(12, 3));
+        System.out.println("p8_5:" + p8_5(15, 4));
+        System.out.println("p8_5:" + p8_5(6, 3));
+        System.out.println("p8_5:" + p8_5(10, 10));
+        System.out.println();
+    }
+
+    public static void p8_6_test() {
+        System.out.println("p8_6:");
+        Tower t0 = new Tower(0);
+        Tower t1 = new Tower(1);
+        Tower t2 = new Tower(2);
+
+        int[] list = {3, 2, 1};
+        for (int i = 0; i < list.length; i++) {
+            t0.add(list[i]);
+        }
+
+        t0.moveDisks(list.length, t2, t1, t0, t1, t2);
+    }
+
+    public static ArrayList<String> p8_7_1(String str) {
+        return getStrPermutations1(str, 0);
+    }
+
+    public static ArrayList<String> getStrPermutations1(String str, int i) {
+        ArrayList<String> results = new ArrayList();
+        if (i == str.length()) {
+            results.add("");
+            return results;
+        }
+
+        ArrayList<String> foundPermutations = getStrPermutations1(str, i + 1);
+        for (String permutation: foundPermutations) {
+            ArrayList<String> newPermutations = getStrPermutations1(permutation, str.charAt(i));
+            results.addAll(newPermutations);
+        }
+
+        return results;
+    }
+
+    public static ArrayList<String> getStrPermutations1(String str, char c) {
+        ArrayList<String> permutations = new ArrayList();
+
+        StringBuilder sb = new StringBuilder(str);
+        for (int i = 0; i <= str.length(); i++) {
+            sb.insert(i, c);
+            permutations.add(sb.toString());
+            sb.deleteCharAt(i);
+        }
+
+        return permutations;
+    }
+
+
+
+    public static ArrayList<String> p8_7_2(String str) {
+        ArrayList<String> results = new ArrayList();
+        if (str.length() == 0) {
+            results.add("");
+            return results;
+        }
+
+        for (int i = 0; i < str.length(); i++) {
+            String part1 = str.substring(0, i);
+            String part2 = str.substring(i + 1);
+            ArrayList<String> newPermutations = p8_7_2(part1 + part2);
+
+            for (String permutation: newPermutations) {
+                results.add(str.charAt(i) + permutation);
+            }
+        }
+
+        return results;
+    }
+
+    public static ArrayList<String> p8_7_3(String str) {
+        ArrayList<String> results = new ArrayList();
+        getPermutations3("", str, results);
+        return results;
+    }
+
+    public static void getPermutations3(String prefix, String remainder, ArrayList<String> results) {
+        if (remainder.length() == 0)
+            results.add(prefix);
+
+        for (int i = 0; i < remainder.length(); i++) {
+            String part1 = remainder.substring(0, i);
+            String part2 = remainder.substring(i + 1);
+            char c = remainder.charAt(i);
+            getPermutations3(prefix + c, part1 + part2, results);
+        }
+    }
+
+    public static void p8_7_test() {
+        System.out.println("p8_7_1:" + p8_7_1("123"));
+        System.out.println("p8_7_2:" + p8_7_2("123"));
+        System.out.println("p8_7_3:" + p8_7_3("123"));
+        System.out.println();
+    }
+
+    /** non unique characters */
+    public static ArrayList<String> p8_8(String str) {
+        ArrayList<String> results = new ArrayList();
+
+        HashMap<Character, Integer> charFreq = new HashMap();
+        for (char c: str.toCharArray()) {
+            if (!charFreq.containsKey(c)) {
+                charFreq.put(c, 0);
+            }
+            charFreq.put(c, charFreq.get(c) + 1);
+        }
+
+        getPermutationsNU(charFreq, "", str.length(), results);
+
+        return results;
+    }
+
+    public static void getPermutationsNU(HashMap<Character, Integer> charFreq,
+                                         String prefix, int remaining, ArrayList<String> results) {
+        if (remaining == 0) {
+            results.add(prefix);
+            return;
+        }
+
+        for (char c: charFreq.keySet()) {
+            int count = charFreq.get(c);
+            if (count > 0) {
+                charFreq.put(c, count - 1);
+                getPermutationsNU(charFreq, prefix + c, remaining - 1, results);
+                charFreq.put(c, count);
+            }
+        }
+    }
+
+    public static void p8_8_test() {
+        System.out.println("p8_8:" + p8_8("123"));
+        System.out.println("p8_8:" + p8_8("122"));
+        System.out.println("p8_8:" + p8_8("111"));
+        System.out.println();
+    }
+
+    public static ArrayList<String> p8_9(int n) {
+        ArrayList<String> results = new ArrayList();
+        char[] str = new char[n * 2];
+        getParens(results, 0, n, n, str);
+        return results;
+    }
+
+    public static void getParens(ArrayList<String> results, int index, int numLeft, int numRight, char[] str) {
+        // invalid
+        if (numLeft < 0|| numLeft > numRight)
+            return;
+
+        if (numLeft == 0 && numRight == 0)
+            results.add(String.copyValueOf(str));
+        else {
+            str[index] = '(';
+            getParens(results, index + 1, numLeft - 1, numRight, str);
+
+            str[index] = ')';
+            getParens(results, index + 1, numLeft, numRight - 1, str);
+        }
+    }
+
+    public static void p8_9_test() {
+        System.out.println("p8_9:" + p8_9(0));
+        System.out.println("p8_9:" + p8_9(1));
+        System.out.println("p8_9:" + p8_9(2));
+        System.out.println("p8_9:" + p8_9(3));
+        System.out.println();
+    }
+
+    public static void p8_10(char[][] screen, int row, int col, char newColor) {
+        char oldColor = screen[row][col];
+        if (oldColor != newColor) {
+            paintFill(screen, row, col, newColor, oldColor);
+        }
+    }
+
+    public static void paintFill(char[][] screen, int row, int col, char newColor, char oldColor) {
+        // stop if you hit edges of the screen
+        if (row < 0 || row >= screen.length || col < 0 || col >= screen[0].length) {
+            return;
+        }
+
+        if (screen[row][col] == oldColor) {
+            screen[row][col] = newColor;
+            paintFill(screen, row - 1, col, newColor, oldColor);
+            paintFill(screen, row + 1, col, newColor, oldColor);
+            paintFill(screen, row, col - 1, newColor, oldColor);
+            paintFill(screen, row, col + 1, newColor, oldColor);
+        }
+    }
+
+    public static void printScreen(char[][] screen) {
+        int numRows = screen.length;
+        int numCols = screen[0].length;
+        for (int row = 0; row < numRows; row++) {
+            for (int col = 0; col < numCols; col++) {
+                System.out.print(screen[row][col] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    public static void p8_10_test() {
+        System.out.println("p8_10:");
+        char[][] screen = {{'O', 'O', 'R', 'O', 'R'},
+                           {'O', 'R', 'R', 'R', 'O'},
+                           {'R', 'R', 'R', 'O', 'R'},
+                           {'O', 'O', 'R', 'R', 'R'}};
+        printScreen(screen);
+        System.out.println();
+
+        p8_10(screen, 1, 1, 'R');
+        printScreen(screen);
+        System.out.println();
+
+        p8_10(screen, 1, 1, 'X');
+        printScreen(screen);
+        System.out.println();
+    }
+
+    public static int p8_11(int amount) {
+        /**
+         * Our code depend on pennies being at the end, because we assume that when we reach the last denomIx,
+         * there is exactly one possibility. If you did not end with pennies, then you have to make sure
+         * that you can create the amount with the last denomination (for example, you can't make 7 cents with just nickels)
+         *
+         * Going in descending order is more efficient.
+         * if we had amount = 100:
+         * starting with quarters would only produce 4 + 1 branches
+         * starting with nickels would produce 20 + 1 branches
+         *
+         */
+
+        int[] denoms = {25, 10, 5, 1};
+        int[][] memo = new int[amount + 1][denoms.length];
+        return makeChange(denoms, amount, 0, memo);
+    }
+
+    public static int makeChange(int[] denoms, int amount, int denomIx, int[][] memo) {
+        /**
+         * suppose we already counted the ways to make 20 cents with dimes (+ smaller denominations),
+         * then we just retrieve this value from the memo table.
+         * memo[20][1] means ways to get 20 cents when we only have denomination #1 left (dimes)
+         */
+        if (memo[amount][denomIx] > 0)
+            return memo[amount][denomIx];
+
+        // when left with just pennies, there is just 1 way to make change
+        if (denomIx == denoms.length - 1)
+            return 1;
+
+        int ways = 0;
+        int denomAmt = denoms[denomIx];
+        for (int i = 0; i * denomAmt <= amount; i++) {
+            int newAmt = amount - i * denomAmt;
+            ways += makeChange(denoms, newAmt, denomIx + 1, memo);
+        }
+        memo[amount][denomIx] = ways;
+        return ways;
+    }
+
+    public static void p8_11_test() {
+        System.out.println("p8_11: " + p8_11(15));
+        System.out.println();
     }
 }
