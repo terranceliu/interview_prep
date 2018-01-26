@@ -39,6 +39,12 @@ public class ProblemsCh8 {
 
         /** Problem 8.11 */
         p8_11_test();
+
+        /** Problem 8.12 */
+        p8_12_test();
+
+        /** Problem 8.13 */
+        p8_13_test();
     }
 
     public static int fibonacci_1(int n) {
@@ -612,4 +618,157 @@ public class ProblemsCh8 {
         System.out.println("p8_11: " + p8_11(15));
         System.out.println();
     }
+
+
+    public static ArrayList<int[]> p8_12() {
+        ArrayList<int[]> results = new ArrayList();
+        int[] columns = new int[8];
+        placeQueens(0, columns, results);
+        return results;
+    }
+
+    // iterate through each row and pick a column to put the queen in
+    public static void placeQueens(int row, int[] columns, ArrayList<int[]> results) {
+        int GRID_SIZE = columns.length;
+
+        // if we reach the last row, then we're done
+        if (row == GRID_SIZE)
+            results.add(columns.clone());
+        else {
+            for (int col = 0; col < GRID_SIZE; col++) {
+                if (checkValid(columns, row, col)) {
+                    columns[row] = col;
+                    placeQueens(row + 1, columns, results);
+                }
+            }
+        }
+
+    }
+
+    public static boolean checkValid(int[] columns, int row, int col) {
+        for (int rowCheck = 0; rowCheck < row; rowCheck++) {
+            int colCheck = columns[rowCheck];
+
+            // 1) check same row: not needed since we're adding one row at a time
+
+            // 2) check same column
+            if (col == colCheck)
+                return false;
+
+            // 3) check diagonal: this means horizontal and vertical coordinate diff are the same
+            int colDistance = Math.abs(col - colCheck);
+            int rowDistance = row - rowCheck; // don't need abs since row > rowCheck
+
+            if (colDistance == rowDistance)
+                return false;
+        }
+
+        return true;
+    }
+
+    public static void p8_12_test() {
+        ArrayList<int[]> results = p8_12();
+        for (int[] result: results) {
+            for (int row = 0; row < result.length; row++) {
+                for (int col = 0; col < result.length; col++) {
+                    if (col == result[row])
+                        System.out.print("X");
+                    else
+                        System.out.print("_");
+                    System.out.print(" ");
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
+    }
+
+    public static int p8_13_1(ArrayList<Box> boxes) {
+        int[] memo = new int[boxes.size()];
+
+        /**
+         * sort the boxes by one dimension to guarantee that you don't need to check previous boxes
+         */
+        Collections.sort(boxes, new BoxComparator());
+        int maxHeight = 0;
+        // test the height of every stack where the bottom is box i
+        for (int i = 0; i < boxes.size(); i++) {
+            int checkHeight = createStack1(boxes, i, memo);
+            maxHeight = Math.max(maxHeight, checkHeight);
+        }
+
+        return maxHeight;
+    }
+
+    /** get max height given that the bottom is box #bottomIndex */
+    public static int createStack1(ArrayList<Box> boxes, int bottomIndex, int[] memo) {
+        if(memo[bottomIndex] > 0)
+            return memo[bottomIndex];
+
+        Box bottomBox = boxes.get(bottomIndex);
+
+        // get best stack with subsequent boxes
+        int maxHeight = 0;
+        for (int i = bottomIndex+1; i < boxes.size(); i++) {
+            Box checkBox = boxes.get(i);
+            if (checkBox.canBeAbove(bottomBox)) {
+                int checkHeight = createStack1(boxes, i, memo);
+                maxHeight = Math.max(maxHeight, checkHeight);
+            }
+        }
+
+        // add height of current box
+        maxHeight += bottomBox.h;
+        memo[bottomIndex] = maxHeight;
+        return maxHeight;
+    }
+
+    public static class BoxComparator implements Comparator<Box> {
+        @Override
+        public int compare(Box x, Box y) {
+            return y.h - x.h;
+        }
+    }
+
+    public static int p8_13_2(ArrayList<Box> boxes) {
+        Collections.sort(boxes, new BoxComparator());
+        int[] memo = new int[boxes.size()];
+        return createStack2(boxes, 0 , null, memo);
+    }
+
+    public static int createStack2(ArrayList<Box> boxes, int index, Box bottom, int[] memo) {
+        if (index >= boxes.size())
+            return 0;
+
+        Box newBottom = boxes.get(index);
+        int heightNewBottom = 0;
+        if (bottom == null || newBottom.canBeAbove(bottom)) {
+            // check if we've got the max height for the new bottom before
+            if (memo[index] == 0) {
+                memo[index] += newBottom.h;
+                memo[index] += createStack2(boxes, index + 1, newBottom, memo);
+            }
+            heightNewBottom = memo[index];
+        }
+
+        int heightOrigBottom = createStack2(boxes, index + 1, bottom, memo);
+
+        return Math.max(heightNewBottom, heightOrigBottom);
+    }
+    
+    public static void p8_13_test() {
+        ArrayList<Box> boxes = new ArrayList();
+        boxes.add(new Box(3, 3, 6));
+        boxes.add(new Box(5, 9, 8));
+        boxes.add(new Box(10, 6, 10));
+        boxes.add(new Box(4, 3, 7));
+        boxes.add(new Box(1, 1, 1));
+
+        System.out.println("p8_13_1: " + p8_13_1(boxes));
+        System.out.println("p8_13_2: " + p8_13_2(boxes));
+        System.out.println();
+    }
+
+    
+    
 }
