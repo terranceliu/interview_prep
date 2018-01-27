@@ -22,6 +22,15 @@ public class ProblemsCh10 {
 
         /** Problem 10.5 */
         p10_5_test();
+
+        /** Problem 10.9 */
+        p10_9_test();
+
+        /** Problem 10.10 */
+        p10_10_test();
+
+        /** Problem 10.11 */
+        p10_11_test();
     }
 
     public static void printIntArray(int[] array) {
@@ -286,7 +295,6 @@ public class ProblemsCh10 {
         }
     }
 
-
     public static void p10_5_test() {
         String[] array = {"at", "", "", "", "ball", "", "", "car", "", "", "dad", "", ""};
 
@@ -295,6 +303,133 @@ public class ProblemsCh10 {
                 " " + p10_5(array, "ball") +
                 " " + p10_5(array, "car") +
                 " " + p10_5(array, "dad"));
+        System.out.println();
+    }
+
+    public static Coordinate p10_9(int[][] matrix, int val) {
+        return findElement(matrix, val, new Coordinate(0, 0), new Coordinate(matrix.length - 1, matrix[0].length - 1));
+    }
+
+    public static Coordinate findElement(int[][] matrix, int val, Coordinate origin, Coordinate dest) {
+        if (!origin.isInbounds(matrix) || !dest.isInbounds(matrix))
+            return null;
+
+        if (origin.getElement(matrix) == val)
+            return origin;
+        else if (dest.getElement(matrix) == val)
+            return dest;
+        else if (!origin.isBefore(dest))
+            return null;
+
+        //get diagonal (since we can have a rectangular matrix
+        int diagDist = Math.min(dest.row - origin.row, dest.col - origin.col);
+        Coordinate destDiag = new Coordinate(origin.row + diagDist, origin.col + diagDist);
+        Coordinate originDiag = origin.clone();
+
+        //binary search diagonal until you find the first element greater than x (when origin > dest)
+        Coordinate midCoor = new Coordinate(0, 0);
+        while (originDiag.isBefore(destDiag)) {
+            midCoor.setToAvg(originDiag, destDiag);
+            if (val <= midCoor.getElement(matrix)) {
+                destDiag.row = midCoor.row - 1;
+                destDiag.col = midCoor.col - 1;
+            }
+            else {
+                originDiag.row = midCoor.row + 1;
+                originDiag.col = midCoor.col + 1;
+            }
+        }
+
+
+        // partition and search lower left and upper right
+        return partitionAndSearch(matrix, val, origin, dest, originDiag);
+    }
+
+    public static Coordinate partitionAndSearch(int[][] matrix, int val, Coordinate origin, Coordinate dest, Coordinate pivot) {
+        Coordinate leftLowerOrigin = new Coordinate(pivot.row, origin.col);
+        Coordinate leftLowerDest = new Coordinate(dest.row, pivot.col - 1);
+        Coordinate rightUpperOrigin = new Coordinate(origin.row, pivot.col);
+        Coordinate rightUpperDest = new Coordinate(pivot.row - 1, dest.col);
+
+        Coordinate found = findElement(matrix, val, leftLowerOrigin, leftLowerDest);
+        if (found != null)
+            return found;
+        return findElement(matrix, val, rightUpperOrigin, rightUpperDest);
+    }
+
+
+    public static void p10_9_test() {
+        int[][] matrix = {{5, 10, 15, 40},
+                {12, 16, 20, 50},
+                {16, 25, 30, 60},
+                {55, 70, 80, 100}};
+        System.out.println("p10_9:");
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                System.out.print(p10_9(matrix, matrix[i][j]) + " ");
+            }
+            System.out.println();
+        }
+
+        System.out.println();
+    }
+
+    public static void p10_10_test() {
+        System.out.println("p10_10: ");
+
+        RankingBST bst = new RankingBST();
+        int[] stream = {5, 1, 4, 4, 5, 9, 7, 13, 3};
+        for (int i: stream) {
+            bst.insert(i);
+        }
+
+        bst.printInOrder();
+        System.out.println();
+
+        for (int i = 0; i < 16; i++) {
+            System.out.println(i + ": " + bst.getRank(i));
+        }
+        System.out.println();
+    }
+
+    public static void p10_11(int[] array) {
+        if (array.length <= 1)
+            return;
+
+        for (int i = 1; i < array.length - 1; i+=2) {
+            int maxIndex = maxIndex(array, i - 1, i, i + 1);
+            if (maxIndex != i) {
+                swap(array, i, maxIndex);
+            }
+        }
+    }
+
+    public static void swap(int[] array, int i, int j) {
+        int temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+
+    public static int maxIndex(int[] array, int i, int j, int k) {
+        int len = array.length;
+
+        int iVal = (i >= 0 && i < len) ? array[i]:Integer.MIN_VALUE;
+        int jVal = (j >= 0 && j < len) ? array[j]:Integer.MIN_VALUE;
+        int kVal = (k >= 0 && k < len) ? array[k]:Integer.MIN_VALUE;
+
+        int maxVal = Math.max(iVal, Math.max(jVal, kVal));
+
+        if (maxVal == iVal) return i;
+        else if (maxVal == jVal) return j;
+        return k;
+    }
+
+    public static void p10_11_test() {
+        int[] array = {9, 1, 0, 4, 8, 7};
+        printIntArray(array);
+
+        p10_11(array);
+        printIntArray(array);
         System.out.println();
     }
 }
