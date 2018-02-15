@@ -296,5 +296,9 @@ public class ProblemsCh10 {
                 " " + p10_5(array, "car") +
                 " " + p10_5(array, "dad"));
         System.out.println();
+
+        String[] test = {"3", "30", "34", "5", "9"};
+        Arrays.sort(test);
+        printStrArray(test);
     }
 }
