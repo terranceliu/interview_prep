@@ -45,6 +45,9 @@ public class ProblemsCh8 {
 
         /** Problem 8.13 */
         p8_13_test();
+
+        /** Problem 8.14 */
+        p8_14_test();
     }
 
     public static int fibonacci_1(int n) {
@@ -769,6 +772,79 @@ public class ProblemsCh8 {
         System.out.println();
     }
 
-    
-    
+
+    public static int p8_14(String str, boolean result) {
+        HashMap<String, int[]> memo = new HashMap();
+
+        int[] counts = countBoolEvals(str, memo);
+        if (result)
+            return counts[1];
+        else
+            return counts[0];
+    }
+
+    public static int[] countBoolEvals(String str, HashMap<String, int[]> memo) {
+        int[] counts = new int[2];
+        if (str.length() == 0)
+            return counts;
+        if (str.length() == 1) {
+            if (parseBoolChar(str.charAt(0)))
+                counts[1]++;
+            else
+                counts[0]++;
+        }
+
+        int numTrue = 0;
+        int numFalse = 0;
+
+        for (int i = 1; i < str.length(); i += 2) {
+            String leftStr = str.substring(0, i);
+            if (!memo.containsKey(leftStr))
+                memo.put(leftStr, countBoolEvals(leftStr, memo));
+            int[] left = memo.get(leftStr);
+
+            String rightStr = str.substring(i + 1);
+            if (!memo.containsKey(rightStr))
+                memo.put(rightStr, countBoolEvals(rightStr, memo));
+            int[] right = memo.get(rightStr);
+
+            int numBothFalse = left[0] * right[0];
+            int numBothTrue = left[1] * right[1];
+            int numOneOfEach = left[0] * right[1] + left[1] * right[0];
+
+            char operator = str.charAt(i);
+            if (operator == '&') {
+                numTrue += numBothTrue;
+                numFalse += numBothFalse + numOneOfEach;
+            }
+            else if (operator == '|') {
+                numTrue += numBothTrue + numOneOfEach;
+                numFalse += numBothFalse;
+            }
+            else if (operator == '^') {
+                numTrue += numOneOfEach;
+                numFalse += numBothTrue + numBothFalse;
+            }
+        }
+
+        counts[0] += numFalse;
+        counts[1] += numTrue;
+
+        return counts;
+    }
+
+    public static boolean parseBoolChar(char c) {
+        return c == '0' ? false:true;
+    }
+
+    public static void p8_14_test() {
+        System.out.println("p8_14:" + p8_14("1", true));
+        System.out.println("p8_14:" + p8_14("1", false));
+        System.out.println("p8_14:" + p8_14("0", true));
+        System.out.println("p8_14:" + p8_14("0", false));
+
+        System.out.println("p8_14:" + p8_14("1^0|0|1", false));
+        System.out.println("p8_14:" + p8_14("0&0&0&1^1|0", true));
+        System.out.println();
+    }
 }
